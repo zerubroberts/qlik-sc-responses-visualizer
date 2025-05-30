@@ -1,0 +1,15 @@
+{
+  "name": "SC Responses Visualizer",
+  "description": "A powerful hierarchical response visualization extension with expandable categories, detailed breakdowns, interactive selections, and conditional colors",
+  "type": "visualization",
+  "version": "2.0.0",
+  "icon": "bar-chart",
+  "author": "SC Extensions",
+  "homepage": "",
+  "keywords": "qlik-sense, visualization, responses, hierarchical, breakdown, interactive, selections, conditional-colors",
+  "license": "MIT",
+  "repository": "",
+  "dependencies": {
+    "qlik-sense": ">=3.0.x"
+  }
+}

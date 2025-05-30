@@ -1,0 +1,36 @@
+Test Data for SC Responses Visualizer
+=====================================
+
+Copy and paste this inline load script into your Qlik Sense app:
+
+TestData:
+LOAD * INLINE [
+Category, SubCategory, ResponseType, ResponseCount
+Title Page, Store location, Location A, 32
+Title Page, Store location, Location B, 20
+Title Page, Store location, Location C, 12
+Title Page, Inspector, John Smith, 25
+Title Page, Inspector, Jane Doe, 25
+Title Page, Inspector, Bob Johnson, 14
+Product, Product Intake, Good Condition, 45
+Product, Product Intake, Minor Issues, 15
+Product, Product Intake, Major Issues, 4
+Product, Product supplier, Supplier 1, 22
+Product, Product supplier, Supplier 2, 20
+Product, Product supplier, Supplier 3, 22
+Product, Product Display, Excellent, 32
+Product, Product Display, Good, 20
+Product, Product Display, Poor, 12
+Quality Check, Arrival Condition, All Good, 0
+Quality Check, Arrival Condition, Some Issues, 64
+Quality Check, Returns Needed, Yes, 29
+Quality Check, Returns Needed, No, 35
+];
+
+How to use with the extension:
+1. Add SC Responses Visualizer to your sheet
+2. Configure dimensions:
+   - Dimension 1: Category
+   - Dimension 2: SubCategory
+   - Dimension 3: ResponseType (optional)
+3. Configure measure: Sum(ResponseCount)
