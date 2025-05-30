@@ -28,3 +28,6 @@ Thumbs.db
 
 # Debug files
 *.log
+
+# Screenshots folder
+screenshots/

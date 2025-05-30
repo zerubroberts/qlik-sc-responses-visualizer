@@ -4,7 +4,7 @@
   "type": "visualization",
   "version": "2.0.0",
   "icon": "bar-chart",
-  "author": "SC Extensions",
+  "author": "Zerub AI",
   "homepage": "",
   "keywords": "qlik-sense, visualization, responses, hierarchical, breakdown, interactive, selections, conditional-colors",
   "license": "MIT",
