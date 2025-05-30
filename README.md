@@ -37,6 +37,8 @@ A powerful hierarchical response visualization extension for Qlik Sense that dis
 - **Layout**: Customize bar height, spacing, fonts, and borders
 - **Selections**: Enable/disable interactive selections on chart elements
 
+📖 **[Complete Usage Guide](USAGE.md)** - Detailed documentation of all 40+ customization options
+
 ## 🎨 Use Cases
 
 - **Survey Analysis**: Visualize survey responses with automatic color coding
@@ -59,6 +61,7 @@ sc-responses-visualizer/
 ├── src/                     # Source code
 ├── README.md               # This file
 ├── SETUP.md                # Detailed setup instructions
+├── USAGE.md                # Complete usage guide with all options
 └── build.sh                # Build script
 ```
 
