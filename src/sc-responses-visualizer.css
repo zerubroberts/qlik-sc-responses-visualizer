@@ -100,6 +100,10 @@
     flex: 0 0 250px;
     font-size: 14px;
     color: #333333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
 }
 
 .sc-bar-container {

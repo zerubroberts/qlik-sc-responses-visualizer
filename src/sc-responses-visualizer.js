@@ -37,7 +37,7 @@ function(qlik, properties) {
             // Safely get dimension values
             const category = (row[0] && row[0].qText) ? row[0].qText : 'No Category';
             const subCategory = (dimensions.length > 1 && row[1] && row[1].qText) ? row[1].qText : null;
-            const breakdown = (dimensions.length > 2 && row[2] && row[2].qText) ? row[2].qText : 'Default';
+            const breakdown = (dimensions.length > 2 && row[2] && row[2].qText) ? row[2].qText : '';
             
             // Store element numbers for selections
             const categoryElemNumber = row[0] ? row[0].qElemNumber : -1;
@@ -253,6 +253,17 @@ function(qlik, properties) {
         const nameElement = document.createElement('span');
         nameElement.className = 'sc-subcategory-name';
         nameElement.textContent = subCategoryName;
+        
+        // Apply text truncation
+        if (settings.general && settings.general.maxTextLines) {
+            nameElement.style.webkitLineClamp = settings.general.maxTextLines;
+        }
+        
+        // Add tooltip for full text
+        if (settings.general && settings.general.showFullTextOnHover) {
+            nameElement.title = subCategoryName;
+        }
+        
         contentWrapper.appendChild(nameElement);
         
         // Add response count

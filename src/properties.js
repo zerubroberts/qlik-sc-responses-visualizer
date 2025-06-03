@@ -90,6 +90,22 @@ define([], function() {
                 label: "Persist Expand/Collapse State",
                 ref: "settings.general.persistExpandState",
                 defaultValue: true
+            },
+            maxTextLines: {
+                type: "number",
+                component: "slider",
+                label: "Max Text Lines",
+                ref: "settings.general.maxTextLines",
+                defaultValue: 2,
+                min: 1,
+                max: 5,
+                step: 1
+            },
+            showFullTextOnHover: {
+                type: "boolean",
+                label: "Show Full Text on Hover",
+                ref: "settings.general.showFullTextOnHover",
+                defaultValue: true
             }
         }
     };
