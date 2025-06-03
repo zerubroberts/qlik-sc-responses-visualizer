@@ -25,11 +25,23 @@ define([], function() {
     var measures = {
         uses: "measures",
         min: 1,
-        max: 1,
+        max: 4,
         items: {
             responseMeasure: {
-                label: "Response Count",
-                description: "Measure for counting responses"
+                label: "Response Count (Main)",
+                description: "Main measure for counting responses and breakdown visualization"
+            },
+            categoryMeasure1: {
+                label: "Category Measure 1",
+                description: "Additional measure displayed at category level"
+            },
+            categoryMeasure2: {
+                label: "Category Measure 2",
+                description: "Additional measure displayed at category level"
+            },
+            categoryMeasure3: {
+                label: "Category Measure 3",
+                description: "Additional measure displayed at category level"
             }
         }
     };
@@ -482,9 +494,63 @@ define([], function() {
             },
             fontFamily: {
                 type: "string",
+                component: "dropdown",
                 label: "Font Family",
                 ref: "settings.layout.fontFamily",
-                defaultValue: "QlikView Sans, Arial, sans-serif"
+                options: [{
+                    value: "QlikView Sans, 'Qlik Sans', Arial, sans-serif",
+                    label: "Qlik Sans (Default)"
+                }, {
+                    value: "Arial, Helvetica, sans-serif",
+                    label: "Arial"
+                }, {
+                    value: "'Segoe UI', Tahoma, Geneva, sans-serif",
+                    label: "Segoe UI"
+                }, {
+                    value: "Roboto, Arial, sans-serif",
+                    label: "Roboto"
+                }, {
+                    value: "'Open Sans', Arial, sans-serif",
+                    label: "Open Sans"
+                }, {
+                    value: "Lato, Arial, sans-serif",
+                    label: "Lato"
+                }, {
+                    value: "'Source Sans Pro', Arial, sans-serif",
+                    label: "Source Sans Pro"
+                }, {
+                    value: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                    label: "Helvetica Neue"
+                }, {
+                    value: "Calibri, Arial, sans-serif",
+                    label: "Calibri"
+                }, {
+                    value: "Georgia, serif",
+                    label: "Georgia (Serif)"
+                }, {
+                    value: "'Times New Roman', Times, serif",
+                    label: "Times New Roman (Serif)"
+                }, {
+                    value: "'Courier New', Courier, monospace",
+                    label: "Courier New (Monospace)"
+                }, {
+                    value: "Consolas, 'Courier New', monospace",
+                    label: "Consolas (Monospace)"
+                }, {
+                    value: "custom",
+                    label: "Custom Font..."
+                }],
+                defaultValue: "QlikView Sans, 'Qlik Sans', Arial, sans-serif"
+            },
+            customFontFamily: {
+                type: "string",
+                label: "Custom Font Family",
+                ref: "settings.layout.customFontFamily",
+                defaultValue: "",
+                expression: "optional",
+                show: function(data) {
+                    return data.settings && data.settings.layout && data.settings.layout.fontFamily === "custom";
+                }
             }
         }
     };
@@ -576,11 +642,193 @@ define([], function() {
         }
     };
 
+    // Icon options for dropdown
+    var iconOptions = [
+        { value: "lui-icon lui-icon--chart", label: "Chart" },
+        { value: "lui-icon lui-icon--star", label: "Star" },
+        { value: "lui-icon lui-icon--tick", label: "Check" },
+        { value: "lui-icon lui-icon--info", label: "Info" },
+        { value: "lui-icon lui-icon--warning-triangle", label: "Warning" },
+        { value: "lui-icon lui-icon--plus", label: "Plus" },
+        { value: "lui-icon lui-icon--minus", label: "Minus" },
+        { value: "lui-icon lui-icon--calendar", label: "Calendar" },
+        { value: "lui-icon lui-icon--clock", label: "Clock" },
+        { value: "lui-icon lui-icon--user", label: "User" },
+        { value: "lui-icon lui-icon--group", label: "Group" },
+        { value: "lui-icon lui-icon--home", label: "Home" },
+        { value: "lui-icon lui-icon--database", label: "Database" },
+        { value: "lui-icon lui-icon--bookmark", label: "Bookmark" },
+        { value: "lui-icon lui-icon--flag", label: "Flag" },
+        { value: "custom", label: "Custom (Expression)" }
+    ];
+
+    var categoryMeasuresSection = {
+        type: "items",
+        label: "Category Level Display",
+        items: {
+            showCategoryMeasures: {
+                type: "boolean",
+                label: "Show Additional Measures at Category Level",
+                ref: "settings.categoryMeasures.enabled",
+                defaultValue: false
+            },
+            measureInfo: {
+                component: "text",
+                label: "Configure each measure's display settings below. The first measure is used for the bar chart visualization.",
+                show: function(data) {
+                    return data.settings && data.settings.categoryMeasures && data.settings.categoryMeasures.enabled;
+                }
+            },
+            measureSeparator: {
+                type: "string",
+                label: "Measure Separator",
+                ref: "settings.categoryMeasures.separator",
+                defaultValue: " | ",
+                show: function(data) {
+                    return data.settings && data.settings.categoryMeasures && data.settings.categoryMeasures.enabled;
+                }
+            }
+        }
+    };
+
+    // Function to create measure styling section
+    function createMeasureSection(measureIndex, measureLabel) {
+        var measureRef = 'settings.categoryMeasures.measure' + measureIndex;
+        
+        return {
+            type: "items",
+            label: measureLabel + " Display Settings",
+            show: function(data) {
+                // Show for measure 1 always (main measure)
+                // Show for measures 2-4 only if they exist and category measures are enabled
+                if (measureIndex === 1) {
+                    return true;
+                }
+                return data.settings && data.settings.categoryMeasures && 
+                       data.settings.categoryMeasures.enabled && 
+                       data.qHyperCubeDef.qMeasures.length >= measureIndex;
+            },
+            items: {
+                measureTitle: {
+                    component: "text",
+                    label: function(data) {
+                        if (data.qHyperCubeDef.qMeasures[measureIndex - 1]) {
+                            var measureDef = data.qHyperCubeDef.qMeasures[measureIndex - 1];
+                            var measureName = measureDef.qDef.qLabel || measureDef.qDef.qDef || 'Measure ' + measureIndex;
+                            return "Styling for: " + measureName;
+                        }
+                        return "Measure " + measureIndex + " (not defined)";
+                    },
+                    style: "font-weight: bold; color: #3a3a3a;"
+                },
+                showAtCategoryLevel: {
+                    type: "boolean",
+                    label: "Show at Category Level",
+                    ref: measureRef + ".showAtCategory",
+                    defaultValue: measureIndex > 1, // Only additional measures default to true
+                    show: function(data) {
+                        return true; // Show for all measures
+                    }
+                },
+                label: {
+                    type: "string",
+                    label: "Display Label",
+                    ref: measureRef + ".label",
+                    defaultValue: "",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                iconType: {
+                    type: "string",
+                    component: "dropdown",
+                    label: "Icon",
+                    ref: measureRef + ".iconType",
+                    options: iconOptions,
+                    defaultValue: iconOptions[measureIndex - 1] ? iconOptions[measureIndex - 1].value : "lui-icon lui-icon--chart",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                customIcon: {
+                    type: "string",
+                    label: "Custom Icon Expression",
+                    ref: measureRef + ".customIcon",
+                    expression: "optional",
+                    show: function(data) {
+                        return (measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory)) &&
+                               data.settings.categoryMeasures['measure' + measureIndex] &&
+                               data.settings.categoryMeasures['measure' + measureIndex].iconType === "custom";
+                    }
+                },
+                textColor: {
+                    type: "string",
+                    label: "Text Color",
+                    ref: measureRef + ".textColor",
+                    defaultValue: "#666666",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                backgroundColor: {
+                    type: "string",
+                    label: "Background Color",
+                    ref: measureRef + ".backgroundColor",
+                    defaultValue: "#F0F0F0",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                fontSize: {
+                    type: "number",
+                    component: "slider",
+                    label: "Font Size",
+                    ref: measureRef + ".fontSize",
+                    defaultValue: 12,
+                    min: 10,
+                    max: 20,
+                    step: 1,
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                formatHelp: {
+                    component: "text",
+                    label: "Tip: Use expressions for dynamic styling. Example: =if(Sum(Sales) > 1000, '#27AE60', '#E74C3C')",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                }
+            }
+        };
+    }
+
+    // Create sections for each measure
+    var measure1Section = createMeasureSection(1, "Measure 1");
+    var measure2Section = createMeasureSection(2, "Measure 2");
+    var measure3Section = createMeasureSection(3, "Measure 3");
+    var measure4Section = createMeasureSection(4, "Measure 4");
+
     var appearancePanel = {
         uses: "settings",
         items: {
             general: generalSection,
             colors: colorSection,
+            categoryMeasures: categoryMeasuresSection,
+            measure1Display: measure1Section,
+            measure2Display: measure2Section,
+            measure3Display: measure3Section,
+            measure4Display: measure4Section,
             sorting: sortingSection,
             tooltip: tooltipSection,
             layout: layoutSection,

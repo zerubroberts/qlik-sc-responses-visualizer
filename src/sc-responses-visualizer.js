@@ -14,6 +14,70 @@ function(qlik, properties) {
         if (typeof colorSetting === 'object' && colorSetting.color) return colorSetting.color;
         return '#000000';
     }
+    
+    // Helper function to evaluate expressions or return static values
+    function evaluateExpression(value, app) {
+        if (!value) return '';
+        
+        // If it's an expression string starting with =
+        if (typeof value === 'string' && value.startsWith('=')) {
+            // This needs to be evaluated by Qlik engine
+            // For now, return empty until we implement proper evaluation
+            return '';
+        }
+        
+        // If it's already a plain value, return it
+        return value;
+    }
+    
+    // Format number based on Qlik's formatting or default
+    function formatMeasureValue(value, format, measureInfo) {
+        if (typeof value !== 'number') return value;
+        
+        // If we have measure info with number formatting
+        if (measureInfo && measureInfo.qNumFormat) {
+            const fmt = measureInfo.qNumFormat.qFmt;
+            if (fmt) {
+                // Handle common Qlik number formats
+                if (fmt.includes('#,##0')) {
+                    const decimals = (fmt.match(/0\.(0+)/) || ['', ''])[1].length;
+                    return value.toLocaleString(undefined, {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals
+                    });
+                } else if (fmt.includes('%')) {
+                    const decimals = (fmt.match(/0\.(0+)/) || ['', ''])[1].length;
+                    return (value * 100).toFixed(decimals) + '%';
+                } else if (fmt.includes('$')) {
+                    const decimals = (fmt.match(/0\.(0+)/) || ['', ''])[1].length;
+                    return '$' + value.toLocaleString(undefined, {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals
+                    });
+                }
+            }
+        }
+        
+        // Try to infer format from the formatted text
+        if (format && typeof format === 'string') {
+            if (format.includes('%')) {
+                return format; // Already formatted by Qlik
+            } else if (format.includes('$')) {
+                return format; // Already formatted by Qlik
+            }
+        }
+        
+        // Default formatting
+        return value.toLocaleString();
+    }
+    
+    // Get icon class from icon type selection
+    function getIconClass(iconType, customIcon) {
+        if (iconType === 'custom' && customIcon) {
+            return evaluateExpression(customIcon);
+        }
+        return iconType || '';
+    }
 
     // Define all functions in closure scope to avoid context issues
     function processData(hypercube) {
@@ -62,8 +126,42 @@ function(qlik, properties) {
                     subCategories: {},
                     breakdowns: {},
                     expanded: false,
-                    elemNumber: categoryElemNumber
+                    elemNumber: categoryElemNumber,
+                    additionalMeasures: [],
+                    additionalMeasureFormats: [],
+                    measureCount: 0
                 };
+                
+                // Initialize arrays for additional measures
+                for (let i = 0; i < measures.length - 1; i++) {
+                    processedData[category].additionalMeasures[i] = 0;
+                    processedData[category].additionalMeasureFormats[i] = null;
+                }
+            }
+            
+            // Increment count for averaging
+            processedData[category].measureCount++;
+            
+            // Capture and aggregate additional measures (measures 2, 3, 4)
+            if (measures.length > 1) {
+                for (let i = 1; i < measures.length; i++) {
+                    const additionalMeasureIndex = dimensions.length + i;
+                    if (row[additionalMeasureIndex]) {
+                        // Get numeric value for aggregation
+                        let numValue = 0;
+                        if (typeof row[additionalMeasureIndex].qNum !== 'undefined' && !isNaN(row[additionalMeasureIndex].qNum)) {
+                            numValue = row[additionalMeasureIndex].qNum;
+                        }
+                        
+                        // Add to aggregation
+                        processedData[category].additionalMeasures[i-1] += numValue;
+                        
+                        // Store formatting info from first row
+                        if (!processedData[category].additionalMeasureFormats[i-1] && row[additionalMeasureIndex].qText) {
+                            processedData[category].additionalMeasureFormats[i-1] = row[additionalMeasureIndex].qText;
+                        }
+                    }
+                }
             }
             
             // Process based on whether we have subcategories
@@ -345,8 +443,12 @@ function(qlik, properties) {
             // Add expand icon
             const expandIcon = document.createElement('span');
             expandIcon.className = 'sc-expand-icon';
-            expandIcon.innerHTML = isExpanded ? '▼' : '▶';
             header.appendChild(expandIcon);
+            
+            // Add expanded class if needed
+            if (isExpanded) {
+                categoryGroup.classList.add('sc-expanded');
+            }
             
             // Add category name
             const categoryName = document.createElement('span');
@@ -354,8 +456,113 @@ function(qlik, properties) {
             categoryName.textContent = category;
             header.appendChild(categoryName);
             
-            // Add response count
-            if (settings.general.showCounts) {
+            // Add category measures or response count
+            if (settings.categoryMeasures && settings.categoryMeasures.enabled && 
+                (categoryData.additionalMeasures.length > 0 || settings.categoryMeasures.measure1)) {
+                const measuresContainer = document.createElement('div');
+                measuresContainer.className = 'sc-category-measures';
+                
+                // Prepare all measures with proper formatting
+                const allMeasures = [];
+                const measureFormats = [];
+                
+                // Main measure (always first)
+                allMeasures.push(categoryData.total);
+                measureFormats.push(null); // Main measure uses default formatting
+                
+                // Additional measures with proper values
+                categoryData.additionalMeasures.forEach((value, idx) => {
+                    allMeasures.push(value);
+                    measureFormats.push(categoryData.additionalMeasureFormats[idx]);
+                });
+                
+                let hasVisibleMeasures = false;
+                
+                allMeasures.forEach((measureValue, index) => {
+                    if (measureValue !== null && measureValue !== undefined) {
+                        const measureSettings = settings.categoryMeasures['measure' + (index + 1)];
+                        
+                        // For additional measures (index > 0), check showAtCategory setting
+                        if (index > 0 && (!measureSettings || !measureSettings.showAtCategory)) {
+                            return;
+                        }
+                        
+                        // For main measure (index === 0), only show if explicitly configured
+                        if (index === 0 && (!measureSettings || !measureSettings.showAtCategory)) {
+                            // Don't show main measure unless explicitly enabled
+                            return;
+                        }
+                        
+                        if (measureSettings) {
+                            hasVisibleMeasures = true;
+                            const measureElement = document.createElement('span');
+                            measureElement.className = 'sc-category-measure';
+                            
+                            // Apply custom styling with expression evaluation
+                            const backgroundColor = evaluateExpression(measureSettings.backgroundColor, self.backendApi);
+                            const textColor = evaluateExpression(measureSettings.textColor, self.backendApi);
+                            
+                            if (backgroundColor) {
+                                measureElement.style.backgroundColor = backgroundColor;
+                            }
+                            if (textColor) {
+                                measureElement.style.color = textColor;
+                            }
+                            if (measureSettings.fontSize) {
+                                measureElement.style.fontSize = measureSettings.fontSize + 'px';
+                            }
+                            
+                            // Add icon
+                            const iconClass = getIconClass(measureSettings.iconType, measureSettings.customIcon);
+                            if (iconClass && iconClass !== 'custom') {
+                                const icon = document.createElement('span');
+                                icon.className = iconClass;
+                                measureElement.appendChild(icon);
+                            }
+                            
+                            // Add label (use measure label from Qlik if no custom label)
+                            let labelText = evaluateExpression(measureSettings.label, self.backendApi);
+                            if (!labelText && layout.qHyperCube.qMeasureInfo[index]) {
+                                labelText = layout.qHyperCube.qMeasureInfo[index].qFallbackTitle;
+                            }
+                            
+                            if (labelText) {
+                                const label = document.createElement('span');
+                                label.className = 'sc-category-measure-label';
+                                label.textContent = labelText + ':';
+                                measureElement.appendChild(label);
+                            }
+                            
+                            // Add value with proper formatting
+                            const value = document.createElement('span');
+                            value.className = 'sc-category-measure-value';
+                            const measureInfo = layout.qHyperCube.qMeasureInfo[index] || null;
+                            value.textContent = formatMeasureValue(measureValue, measureFormats[index], measureInfo);
+                            measureElement.appendChild(value);
+                            
+                            measuresContainer.appendChild(measureElement);
+                            
+                            // Add separator if not last visible measure
+                            const nextVisibleMeasure = allMeasures.slice(index + 1).findIndex((val, idx) => {
+                                const nextIdx = index + 1 + idx;
+                                const nextSettings = settings.categoryMeasures['measure' + (nextIdx + 1)];
+                                return val !== null && val !== undefined && 
+                                       (nextIdx === 0 || (nextSettings && nextSettings.showAtCategory));
+                            });
+                            
+                            if (nextVisibleMeasure !== -1) {
+                                const separator = document.createElement('span');
+                                separator.textContent = settings.categoryMeasures.separator || ' | ';
+                                separator.style.margin = '0 4px';
+                                separator.style.opacity = '0.5';
+                                measuresContainer.appendChild(separator);
+                            }
+                        }
+                    }
+                });
+                
+                header.appendChild(measuresContainer);
+            } else if (settings.general.showCounts) {
                 const responseCount = document.createElement('span');
                 responseCount.className = 'sc-response-count';
                 responseCount.textContent = categoryData.total + ' responses';
@@ -496,11 +703,11 @@ function(qlik, properties) {
                 if (subCategories) {
                     if (subCategories.style.display === 'none' || subCategories.style.display === '') {
                         subCategories.style.display = 'block';
-                        expandIcon.innerHTML = '▼';
+                        categoryGroup.classList.add('sc-expanded');
                         setExpandedState(layout.qInfo.qId, categoryName, true, settings);
                     } else {
                         subCategories.style.display = 'none';
-                        expandIcon.innerHTML = '▶';
+                        categoryGroup.classList.remove('sc-expanded');
                         setExpandedState(layout.qInfo.qId, categoryName, false, settings);
                     }
                 }
@@ -624,6 +831,16 @@ function(qlik, properties) {
                 if (!container) {
                     console.error('SC Responses Visualizer: Container not found');
                     return;
+                }
+                
+                // Apply custom font family if set
+                if (settings.layout && settings.layout.fontFamily) {
+                    let fontFamily = settings.layout.fontFamily;
+                    // Use custom font if selected
+                    if (fontFamily === 'custom' && settings.layout.customFontFamily) {
+                        fontFamily = settings.layout.customFontFamily;
+                    }
+                    container.style.fontFamily = fontFamily;
                 }
 
                 // Process and render data

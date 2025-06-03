@@ -46,11 +46,28 @@
 }
 
 .sc-expand-icon {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 20px;
-    font-size: 12px;
+    height: 20px;
     transition: transform 0.2s ease;
     flex-shrink: 0;
+}
+
+.sc-expand-icon::before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid currentColor;
+    transition: transform 0.2s ease;
+}
+
+.sc-expanded .sc-expand-icon::before {
+    transform: rotate(180deg);
 }
 
 .sc-category-name {
@@ -65,6 +82,45 @@
     font-size: 13px;
     color: #666666;
     font-weight: normal;
+}
+
+.sc-category-measures {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: 15px;
+}
+
+.sc-category-measure {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.sc-category-measure:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sc-category-measure i,
+.sc-category-measure .lui-icon {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-right: 5px;
+}
+
+.sc-category-measure-label {
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.sc-category-measure-value {
+    font-weight: 600;
 }
 
 .sc-percentage {
