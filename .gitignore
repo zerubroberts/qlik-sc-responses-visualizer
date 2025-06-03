@@ -31,3 +31,6 @@ Thumbs.db
 
 # Screenshots folder
 screenshots/
+
+# MCP configuration (contains tokens)
+.mcp.json
