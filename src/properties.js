@@ -5,19 +5,20 @@ define([], function() {
         uses: "dimensions",
         min: 2,
         max: 3,
+        description: "Drag fields here",
+        groupLabel: "Dimensions",
         items: {
             categoryDimension: {
-                label: "Category",
-                description: "Main category dimension",
-                isDefault: true
+                label: "Main category",
+                description: "Primary grouping level"
             },
             subCategoryDimension: {
-                label: "Sub-Category",
-                description: "Sub-category dimension (optional)"
+                label: "Sub-category",
+                description: "Secondary grouping (optional)"
             },
             breakdownDimension: {
-                label: "Response Breakdown",
-                description: "Dimension to breakdown responses by"
+                label: "Response breakdown",
+                description: "Values to show in bars"
             }
         }
     };
@@ -25,11 +26,25 @@ define([], function() {
     var measures = {
         uses: "measures",
         min: 1,
-        max: 1,
+        max: 4,
+        description: "Drag fields here",
+        groupLabel: "Measures",
         items: {
             responseMeasure: {
-                label: "Response Count",
-                description: "Measure for counting responses"
+                label: "Bar size",
+                description: "Main measure for visualization"
+            },
+            categoryMeasure1: {
+                label: "Additional KPI 1",
+                description: "Shows at category level"
+            },
+            categoryMeasure2: {
+                label: "Additional KPI 2",
+                description: "Shows at category level"
+            },
+            categoryMeasure3: {
+                label: "Additional KPI 3",
+                description: "Shows at category level"
             }
         }
     };
@@ -60,13 +75,39 @@ define([], function() {
                 ref: "settings.general.showCounts",
                 defaultValue: true
             },
+            barAnimation: {
+                type: "string",
+                component: "dropdown",
+                label: "Bar Animation Style",
+                ref: "settings.general.barAnimation",
+                options: [{
+                    value: "none",
+                    label: "No Animation"
+                }, {
+                    value: "slide",
+                    label: "Slide In"
+                }, {
+                    value: "fade",
+                    label: "Fade In"
+                }, {
+                    value: "grow",
+                    label: "Grow"
+                }, {
+                    value: "bounce",
+                    label: "Bounce"
+                }],
+                defaultValue: "slide"
+            },
             animationDuration: {
                 type: "number",
                 label: "Animation Duration (ms)",
                 ref: "settings.general.animationDuration",
                 defaultValue: 300,
                 min: 0,
-                max: 2000
+                max: 2000,
+                show: function(data) {
+                    return data.settings && data.settings.general && data.settings.general.barAnimation !== "none";
+                }
             },
             defaultExpandState: {
                 type: "string",
@@ -89,6 +130,22 @@ define([], function() {
                 type: "boolean",
                 label: "Persist Expand/Collapse State",
                 ref: "settings.general.persistExpandState",
+                defaultValue: true
+            },
+            maxTextLines: {
+                type: "number",
+                component: "slider",
+                label: "Max Text Lines",
+                ref: "settings.general.maxTextLines",
+                defaultValue: 2,
+                min: 1,
+                max: 5,
+                step: 1
+            },
+            showFullTextOnHover: {
+                type: "boolean",
+                label: "Show Full Text on Hover",
+                ref: "settings.general.showFullTextOnHover",
                 defaultValue: true
             }
         }
@@ -138,36 +195,101 @@ define([], function() {
                 },
                 dualOutput: true
             },
-            barColorScheme: {
+            barColorPalette: {
                 type: "string",
-                component: "dropdown",
-                label: "Bar Color Scheme",
-                ref: "settings.colors.barColorScheme",
-                options: [{
-                    value: "default",
-                    label: "Default"
+                component: "item-selection-list",
+                label: "Bar Color Palette",
+                ref: "settings.colors.barColorPalette",
+                defaultValue: "qlik",
+                items: [{
+                    value: "qlik",
+                    label: "Qlik Sense",
+                    colors: "#5B9BD5,#70AD47,#FDB462,#ED7D31,#A5A5A5,#4472C4,#70AD47,#C55A11"
+                }, {
+                    value: "diverging", 
+                    label: "Diverging 12",
+                    colors: "#B7312C,#CB6651,#E09B7B,#F5D0A9,#F9E5CE,#FFF2CC,#E2EEDA,#C5E0B4,#A8D08D,#70AD47,#548135,#375623"
+                }, {
+                    value: "sequential",
+                    label: "Sequential Blue",
+                    colors: "#F7FBFF,#DEEBF7,#C6DBEF,#9ECAE1,#6BAED6,#4292C6,#2171B5,#08519C"
                 }, {
                     value: "vibrant",
-                    label: "Vibrant"
+                    label: "Vibrant",
+                    colors: "#FF6B6B,#4ECDC4,#45B7D1,#FFA07A,#98D8C8,#95E1D3,#F38181,#AA96DA"
                 }, {
                     value: "pastel",
-                    label: "Pastel"
+                    label: "Soft Pastels",
+                    colors: "#FFE5E5,#FFD6A5,#FFFEC4,#C1FFD7,#B5DEFF,#CAB8FF,#FFCCE7,#F5EBFF"
                 }, {
-                    value: "monochrome",
-                    label: "Monochrome"
+                    value: "earth",
+                    label: "Earth Tones",
+                    colors: "#8B4513,#A0522D,#CD853F,#DEB887,#F4A460,#D2691E,#BC8F8F,#F5DEB3"
                 }, {
                     value: "custom",
-                    label: "Custom"
-                }],
-                defaultValue: "default"
+                    label: "Custom Colors"
+                }]
             },
-            customBarColors: {
-                type: "string",
-                label: "Custom Bar Colors (comma-separated)",
-                ref: "settings.colors.customBarColors",
-                defaultValue: "#5B9BD5,#FDB462,#70B0E0,#AC8DC7,#F9B875,#86C7F3,#F2975A,#B3D69F",
+            barColor1: {
+                type: "object",
+                component: "color-picker",
+                label: "Bar Color 1",
+                ref: "settings.colors.barColor1",
+                defaultValue: { color: "#5B9BD5" },
+                dualOutput: true,
                 show: function(data) {
-                    return data.settings && data.settings.colors && data.settings.colors.barColorScheme === "custom";
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
+                }
+            },
+            barColor2: {
+                type: "object",
+                component: "color-picker",
+                label: "Bar Color 2",
+                ref: "settings.colors.barColor2",
+                defaultValue: { color: "#70AD47" },
+                dualOutput: true,
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
+                }
+            },
+            barColor3: {
+                type: "object",
+                component: "color-picker",
+                label: "Bar Color 3",
+                ref: "settings.colors.barColor3",
+                defaultValue: { color: "#FDB462" },
+                dualOutput: true,
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
+                }
+            },
+            barColor4: {
+                type: "object",
+                component: "color-picker",
+                label: "Bar Color 4",
+                ref: "settings.colors.barColor4",
+                defaultValue: { color: "#ED7D31" },
+                dualOutput: true,
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
+                }
+            },
+            barColor5: {
+                type: "object",
+                component: "color-picker",
+                label: "Bar Color 5",
+                ref: "settings.colors.barColor5",
+                defaultValue: { color: "#A5A5A5" },
+                dualOutput: true,
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
+                }
+            },
+            moreColorsInfo: {
+                component: "text",
+                label: "Add more colors by duplicating the pattern above",
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.barColorPalette === "custom";
                 }
             },
             barOpacity: {
@@ -466,9 +588,63 @@ define([], function() {
             },
             fontFamily: {
                 type: "string",
+                component: "dropdown",
                 label: "Font Family",
                 ref: "settings.layout.fontFamily",
-                defaultValue: "QlikView Sans, Arial, sans-serif"
+                options: [{
+                    value: "QlikView Sans, 'Qlik Sans', Arial, sans-serif",
+                    label: "Qlik Sans (Default)"
+                }, {
+                    value: "Arial, Helvetica, sans-serif",
+                    label: "Arial"
+                }, {
+                    value: "'Segoe UI', Tahoma, Geneva, sans-serif",
+                    label: "Segoe UI"
+                }, {
+                    value: "Roboto, Arial, sans-serif",
+                    label: "Roboto"
+                }, {
+                    value: "'Open Sans', Arial, sans-serif",
+                    label: "Open Sans"
+                }, {
+                    value: "Lato, Arial, sans-serif",
+                    label: "Lato"
+                }, {
+                    value: "'Source Sans Pro', Arial, sans-serif",
+                    label: "Source Sans Pro"
+                }, {
+                    value: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+                    label: "Helvetica Neue"
+                }, {
+                    value: "Calibri, Arial, sans-serif",
+                    label: "Calibri"
+                }, {
+                    value: "Georgia, serif",
+                    label: "Georgia (Serif)"
+                }, {
+                    value: "'Times New Roman', Times, serif",
+                    label: "Times New Roman (Serif)"
+                }, {
+                    value: "'Courier New', Courier, monospace",
+                    label: "Courier New (Monospace)"
+                }, {
+                    value: "Consolas, 'Courier New', monospace",
+                    label: "Consolas (Monospace)"
+                }, {
+                    value: "custom",
+                    label: "Custom Font..."
+                }],
+                defaultValue: "QlikView Sans, 'Qlik Sans', Arial, sans-serif"
+            },
+            customFontFamily: {
+                type: "string",
+                label: "Custom Font Family",
+                ref: "settings.layout.customFontFamily",
+                defaultValue: "",
+                expression: "optional",
+                show: function(data) {
+                    return data.settings && data.settings.layout && data.settings.layout.fontFamily === "custom";
+                }
             }
         }
     };
@@ -560,11 +736,213 @@ define([], function() {
         }
     };
 
+    // Icon options for dropdown
+    var iconOptions = [
+        { value: "lui-icon lui-icon--chart", label: "Chart" },
+        { value: "lui-icon lui-icon--star", label: "Star" },
+        { value: "lui-icon lui-icon--tick", label: "Check" },
+        { value: "lui-icon lui-icon--info", label: "Info" },
+        { value: "lui-icon lui-icon--warning-triangle", label: "Warning" },
+        { value: "lui-icon lui-icon--plus", label: "Plus" },
+        { value: "lui-icon lui-icon--minus", label: "Minus" },
+        { value: "lui-icon lui-icon--calendar", label: "Calendar" },
+        { value: "lui-icon lui-icon--clock", label: "Clock" },
+        { value: "lui-icon lui-icon--user", label: "User" },
+        { value: "lui-icon lui-icon--group", label: "Group" },
+        { value: "lui-icon lui-icon--home", label: "Home" },
+        { value: "lui-icon lui-icon--database", label: "Database" },
+        { value: "lui-icon lui-icon--bookmark", label: "Bookmark" },
+        { value: "lui-icon lui-icon--flag", label: "Flag" },
+        { value: "custom", label: "Custom (Expression)" }
+    ];
+
+    var categoryMeasuresSection = {
+        type: "items",
+        label: "Category Level Display",
+        items: {
+            showCategoryMeasures: {
+                type: "boolean",
+                label: "Show Additional Measures at Category Level",
+                ref: "settings.categoryMeasures.enabled",
+                defaultValue: false
+            },
+            measureInfo: {
+                component: "text",
+                label: "Configure each measure's display settings below. The first measure is used for the bar chart visualization.",
+                show: function(data) {
+                    return data.settings && data.settings.categoryMeasures && data.settings.categoryMeasures.enabled;
+                }
+            },
+            measureSeparator: {
+                type: "string",
+                label: "Measure Separator",
+                ref: "settings.categoryMeasures.separator",
+                defaultValue: " | ",
+                show: function(data) {
+                    return data.settings && data.settings.categoryMeasures && data.settings.categoryMeasures.enabled;
+                }
+            },
+            measureAlignment: {
+                type: "string",
+                component: "dropdown",
+                label: "Measure Alignment",
+                ref: "settings.categoryMeasures.alignment",
+                options: [{
+                    value: "left",
+                    label: "Left"
+                }, {
+                    value: "center",
+                    label: "Center"
+                }, {
+                    value: "right",
+                    label: "Right"
+                }],
+                defaultValue: "right",
+                show: function(data) {
+                    return data.settings && data.settings.categoryMeasures && data.settings.categoryMeasures.enabled;
+                }
+            }
+        }
+    };
+
+    // Function to create measure styling section
+    function createMeasureSection(measureIndex, measureLabel) {
+        var measureRef = 'settings.categoryMeasures.measure' + measureIndex;
+        
+        return {
+            type: "items",
+            label: measureLabel + " Display Settings",
+            show: function(data) {
+                // Show for measure 1 always (main measure)
+                // Show for measures 2-4 only if they exist and category measures are enabled
+                if (measureIndex === 1) {
+                    return true;
+                }
+                return data.settings && data.settings.categoryMeasures && 
+                       data.settings.categoryMeasures.enabled && 
+                       data.qHyperCubeDef.qMeasures.length >= measureIndex;
+            },
+            items: {
+                measureTitle: {
+                    component: "text",
+                    label: function(data) {
+                        if (data.qHyperCubeDef.qMeasures[measureIndex - 1]) {
+                            var measureDef = data.qHyperCubeDef.qMeasures[measureIndex - 1];
+                            var measureName = measureDef.qDef.qLabel || measureDef.qDef.qDef || 'Measure ' + measureIndex;
+                            return "Styling for: " + measureName;
+                        }
+                        return "Measure " + measureIndex + " (not defined)";
+                    },
+                    style: "font-weight: bold; color: #3a3a3a;"
+                },
+                showAtCategoryLevel: {
+                    type: "boolean",
+                    label: "Show at Category Level",
+                    ref: measureRef + ".showAtCategory",
+                    defaultValue: measureIndex > 1, // Only additional measures default to true
+                    show: function(data) {
+                        return true; // Show for all measures
+                    }
+                },
+                label: {
+                    type: "string",
+                    label: "Display Label",
+                    ref: measureRef + ".label",
+                    defaultValue: "",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                iconType: {
+                    type: "string",
+                    component: "dropdown",
+                    label: "Icon",
+                    ref: measureRef + ".iconType",
+                    options: iconOptions,
+                    defaultValue: iconOptions[measureIndex - 1] ? iconOptions[measureIndex - 1].value : "lui-icon lui-icon--chart",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                customIcon: {
+                    type: "string",
+                    label: "Custom Icon Expression",
+                    ref: measureRef + ".customIcon",
+                    expression: "optional",
+                    show: function(data) {
+                        return (measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory)) &&
+                               data.settings.categoryMeasures['measure' + measureIndex] &&
+                               data.settings.categoryMeasures['measure' + measureIndex].iconType === "custom";
+                    }
+                },
+                textColor: {
+                    type: "string",
+                    label: "Text Color",
+                    ref: measureRef + ".textColor",
+                    defaultValue: "#666666",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                backgroundColor: {
+                    type: "string",
+                    label: "Background Color",
+                    ref: measureRef + ".backgroundColor",
+                    defaultValue: "#F0F0F0",
+                    expression: "optional",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                fontSize: {
+                    type: "number",
+                    component: "slider",
+                    label: "Font Size",
+                    ref: measureRef + ".fontSize",
+                    defaultValue: 12,
+                    min: 10,
+                    max: 20,
+                    step: 1,
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                },
+                formatHelp: {
+                    component: "text",
+                    label: "Tip: Use expressions for dynamic styling. Example: =if(Sum(Sales) > 1000, '#27AE60', '#E74C3C')",
+                    show: function(data) {
+                        return measureIndex === 1 || (data.settings.categoryMeasures['measure' + measureIndex] && 
+                               data.settings.categoryMeasures['measure' + measureIndex].showAtCategory);
+                    }
+                }
+            }
+        };
+    }
+
+    // Create sections for each measure
+    var measure1Section = createMeasureSection(1, "Measure 1");
+    var measure2Section = createMeasureSection(2, "Measure 2");
+    var measure3Section = createMeasureSection(3, "Measure 3");
+    var measure4Section = createMeasureSection(4, "Measure 4");
+
     var appearancePanel = {
         uses: "settings",
         items: {
             general: generalSection,
             colors: colorSection,
+            categoryMeasures: categoryMeasuresSection,
+            measure1Display: measure1Section,
+            measure2Display: measure2Section,
+            measure3Display: measure3Section,
+            measure4Display: measure4Section,
             sorting: sortingSection,
             tooltip: tooltipSection,
             layout: layoutSection,
