@@ -7,6 +7,7 @@ yarn-error.log*
 # Build outputs
 *.zip
 build/
+dist/
 
 # IDE files
 .idea/

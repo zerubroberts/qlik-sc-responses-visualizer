@@ -7,8 +7,12 @@ echo "Building SC Responses Visualizer extension..."
 
 # Clean up any existing build
 rm -f sc-responses-visualizer.zip
+rm -rf dist/
 
-# Ensure dist folder is up to date
+# Create fresh dist folder
+echo "Creating dist folder..."
+mkdir -p dist
+
 echo "Copying files to dist folder..."
 cp -f sc-responses-visualizer.qext dist/
 cp -f wbfolder.wbl dist/

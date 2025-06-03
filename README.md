@@ -59,12 +59,12 @@ cd qlik-sc-responses-visualizer
 ### Project Structure
 ```
 sc-responses-visualizer/
-├── dist/                    # Distribution files for Qlik
-├── src/                     # Source code
+├── src/                     # Source code (development files)
 ├── README.md               # This file
 ├── SETUP.md                # Detailed setup instructions
 ├── USAGE.md                # Complete usage guide with all options
-└── build.sh                # Build script
+├── build.sh                # Build script
+└── dist/                   # Generated during build (not in repo)
 ```
 
 ## 🐛 Troubleshooting
