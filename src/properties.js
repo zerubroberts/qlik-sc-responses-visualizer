@@ -99,32 +99,44 @@ define([], function() {
         label: "Colors & Styling",
         items: {
             categoryBackground: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Category Background Color",
                 ref: "settings.colors.categoryBackground",
-                defaultValue: "#E8EEF7",
-                expression: "optional"
+                defaultValue: {
+                    color: "#E8EEF7"
+                },
+                dualOutput: true
             },
             subCategoryBackground: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Sub-Category Background Color",
                 ref: "settings.colors.subCategoryBackground",
-                defaultValue: "#F5F7FA",
-                expression: "optional"
+                defaultValue: {
+                    color: "#F5F7FA"
+                },
+                dualOutput: true
             },
             textColor: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Text Color",
                 ref: "settings.colors.textColor",
-                defaultValue: "#333333",
-                expression: "optional"
+                defaultValue: {
+                    color: "#333333"
+                },
+                dualOutput: true
             },
             hoverColor: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Hover Color",
                 ref: "settings.colors.hoverColor",
-                defaultValue: "#D6E3F2",
-                expression: "optional"
+                defaultValue: {
+                    color: "#D6E3F2"
+                },
+                dualOutput: true
             },
             barColorScheme: {
                 type: "string",
@@ -174,47 +186,77 @@ define([], function() {
                 ref: "settings.colors.enableConditionalColors",
                 defaultValue: false
             },
+            negativeResponsesHelp: {
+                component: "text",
+                label: "Enter negative response keywords separated by commas. Example: No, Bad, Poor",
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
+                }
+            },
             negativeResponses: {
                 type: "string",
-                label: "Negative Responses (comma-separated)",
+                component: "textarea",
+                label: "Negative Responses",
                 ref: "settings.colors.negativeResponses",
                 defaultValue: "No,Bad,Poor,Failed,Rejected,Non-compliant",
+                rows: 3,
                 show: function(data) {
                     return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
                 }
             },
             negativeColor: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Negative Response Color",
                 ref: "settings.colors.negativeColor",
-                defaultValue: "#E74C3C",
+                defaultValue: {
+                    color: "#E74C3C"
+                },
+                dualOutput: true,
+                show: function(data) {
+                    return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
+                }
+            },
+            warningResponsesHelp: {
+                component: "text",
+                label: "Enter warning response keywords separated by commas. Example: Maybe, Partial",
                 show: function(data) {
                     return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
                 }
             },
             warningResponses: {
                 type: "string",
-                label: "Warning Responses (comma-separated)",
+                component: "textarea",
+                label: "Warning Responses",
                 ref: "settings.colors.warningResponses",
                 defaultValue: "Maybe,Partial,Some Issues,Minor Issues",
+                rows: 3,
                 show: function(data) {
                     return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
                 }
             },
             warningColor: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Warning Response Color",
                 ref: "settings.colors.warningColor",
-                defaultValue: "#F39C12",
+                defaultValue: {
+                    color: "#F39C12"
+                },
+                dualOutput: true,
                 show: function(data) {
                     return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
                 }
             },
             positiveColor: {
-                type: "string",
+                type: "object",
+                component: "color-picker",
                 label: "Positive Response Color",
                 ref: "settings.colors.positiveColor",
-                defaultValue: "#27AE60",
+                defaultValue: {
+                    color: "#27AE60"
+                },
+                dualOutput: true,
                 show: function(data) {
                     return data.settings && data.settings.colors && data.settings.colors.enableConditionalColors;
                 }
@@ -333,43 +375,63 @@ define([], function() {
         items: {
             categoryPadding: {
                 type: "number",
+                component: "slider",
                 label: "Category Padding (px)",
                 ref: "settings.layout.categoryPadding",
                 defaultValue: 15,
                 min: 0,
-                max: 50
+                max: 50,
+                step: 1
             },
             subCategoryPadding: {
                 type: "number",
+                component: "slider",
                 label: "Sub-Category Padding (px)",
                 ref: "settings.layout.subCategoryPadding",
                 defaultValue: 10,
                 min: 0,
-                max: 50
+                max: 50,
+                step: 1
             },
             barHeight: {
                 type: "number",
+                component: "slider",
                 label: "Bar Height (px)",
                 ref: "settings.layout.barHeight",
                 defaultValue: 24,
                 min: 10,
-                max: 100
+                max: 100,
+                step: 1
             },
             barSpacing: {
                 type: "number",
+                component: "slider",
                 label: "Bar Segment Spacing (px)",
                 ref: "settings.layout.barSpacing",
                 defaultValue: 1,
                 min: 0,
-                max: 10
+                max: 10,
+                step: 0.5
             },
             barBorderRadius: {
                 type: "number",
+                component: "slider",
                 label: "Bar Border Radius (px)",
                 ref: "settings.layout.barBorderRadius",
                 defaultValue: 4,
                 min: 0,
-                max: 20
+                max: 20,
+                step: 1
+            },
+            segmentBorderRadius: {
+                type: "number",
+                component: "slider",
+                label: "Segment Border Radius (px)",
+                ref: "settings.layout.segmentBorderRadius",
+                defaultValue: 0,
+                min: 0,
+                max: 20,
+                step: 1
             },
             fontSize: {
                 type: "string",

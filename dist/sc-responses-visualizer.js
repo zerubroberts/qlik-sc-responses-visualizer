@@ -7,6 +7,14 @@ function(qlik, properties) {
     // State management for expand/collapse
     const expandedStates = {};
 
+    // Helper function to get color value from color picker object or string
+    function getColorValue(colorSetting) {
+        if (!colorSetting) return '#000000';
+        if (typeof colorSetting === 'string') return colorSetting;
+        if (typeof colorSetting === 'object' && colorSetting.color) return colorSetting.color;
+        return '#000000';
+    }
+
     // Define all functions in closure scope to avoid context issues
     function processData(hypercube) {
         console.log('SC Responses Visualizer: Starting data processing');
@@ -138,7 +146,7 @@ function(qlik, properties) {
         if (settings.colors.negativeResponses) {
             const negatives = settings.colors.negativeResponses.toLowerCase().split(',').map(s => s.trim());
             if (negatives.some(neg => response.includes(neg))) {
-                return settings.colors.negativeColor || '#E74C3C';
+                return getColorValue(settings.colors.negativeColor) || '#E74C3C';
             }
         }
         
@@ -146,13 +154,13 @@ function(qlik, properties) {
         if (settings.colors.warningResponses) {
             const warnings = settings.colors.warningResponses.toLowerCase().split(',').map(s => s.trim());
             if (warnings.some(warn => response.includes(warn))) {
-                return settings.colors.warningColor || '#F39C12';
+                return getColorValue(settings.colors.warningColor) || '#F39C12';
             }
         }
         
         // Default to positive color if conditional colors are enabled
         if (settings.colors.enableConditionalColors) {
-            return settings.colors.positiveColor || '#27AE60';
+            return getColorValue(settings.colors.positiveColor) || '#27AE60';
         }
         
         return null;
@@ -205,6 +213,11 @@ function(qlik, properties) {
                 segment.style.margin = '0 ' + (settings.layout.barSpacing / 2) + 'px';
             }
             
+            // Apply segment border radius
+            if (settings.layout && settings.layout.segmentBorderRadius) {
+                segment.style.borderRadius = settings.layout.segmentBorderRadius + 'px';
+            }
+            
             segment.setAttribute('data-breakdown', breakdown.name);
             segment.setAttribute('data-value', breakdown.value);
             segment.setAttribute('data-percentage', breakdown.percentage.toFixed(2));
@@ -230,7 +243,7 @@ function(qlik, properties) {
     function renderSubCategory(subCategoryName, subCategoryData, settings, self) {
         const subCategoryGroup = document.createElement('div');
         subCategoryGroup.className = 'sc-subcategory-group sc-response-row';
-        subCategoryGroup.style.backgroundColor = settings.colors.subCategoryBackground;
+        subCategoryGroup.style.backgroundColor = getColorValue(settings.colors.subCategoryBackground);
         subCategoryGroup.style.cursor = 'pointer';
         
         const contentWrapper = document.createElement('div');
@@ -314,8 +327,8 @@ function(qlik, properties) {
             // Create category header
             const header = document.createElement('div');
             header.className = 'sc-category-header';
-            header.style.backgroundColor = settings.colors.categoryBackground;
-            header.style.color = settings.colors.textColor;
+            header.style.backgroundColor = getColorValue(settings.colors.categoryBackground);
+            header.style.color = getColorValue(settings.colors.textColor);
             header.style.cursor = 'pointer';
             
             // Add expand icon

@@ -247,6 +247,13 @@ Positive: "Fully Compliant,Passed,Exceeds Requirements"
 - **Purpose**: Rounded corners for response bars
 - **Design**: 0 = sharp corners, higher values = more rounded
 
+#### Segment Border Radius
+- **Range**: 0-20 pixels
+- **Default**: 0px
+- **Purpose**: Rounded corners for individual segments within bars
+- **Design**: Creates pill-shaped segments when combined with bar spacing
+- **Best Practice**: Use with bar segment spacing for best visual effect
+
 ### Typography
 
 #### Font Size Presets

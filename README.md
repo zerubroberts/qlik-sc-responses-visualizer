@@ -11,6 +11,8 @@ A powerful hierarchical response visualization extension for Qlik Sense that dis
 - **State Persistence**: Remember expand/collapse states between sessions
 - **Modern UI**: Beautiful, responsive design with Qlik Sans font
 - **Rich Customization**: 40+ configuration options for colors, spacing, and layout
+- **Enhanced Property Panel**: Modern UI controls with color pickers, sliders, and helpful text areas
+- **Individual Segment Styling**: Apply border radius to each bar segment for pill-shaped visualization
 
 ## 📦 Installation
 
