@@ -2,6 +2,10 @@
 
 A powerful hierarchical response visualization extension for Qlik Sense that displays survey or assessment data in an elegant, expandable format with detailed breakdowns, rich customization options, and interactive selections.
 
+## 📸 Preview
+
+![SC Responses Visualizer Preview](screenshots/Mockup.png)
+
 ## 🚀 Features
 
 - **Hierarchical Data Display**: Support for 2-3 dimensions (Category, Sub-category, Response breakdown)
